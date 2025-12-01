@@ -1,0 +1,456 @@
+package com.example.snakegame
+
+import android.app.Activity
+import android.os.Bundle
+import android.os.Handler
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
+import java.util.*
+import kotlin.math.pow
+import kotlin.math.sqrt
+
+class MainActivity : Activity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        val board = findViewById<RelativeLayout>(R.id.board)
+        val border = findViewById<RelativeLayout>(R.id.relativeLayout)
+        val lilu = findViewById<LinearLayout>(R.id.lilu)
+        val upButton = findViewById<Button>(R.id.up)
+        val downButton = findViewById<Button>(R.id.down)
+        val leftButton = findViewById<Button>(R.id.left)
+        val rightButton = findViewById<Button>(R.id.right)
+        val pauseButton = findViewById<Button>(R.id.pause)
+        val newgame = findViewById<Button>(R.id.new_game)
+        val resume = findViewById<Button>(R.id.resume)
+        val playagain = findViewById<Button>(R.id.playagain)
+        val score = findViewById<Button>(R.id.score)
+        val score2 = findViewById<Button>(R.id.score2)
+        val meat = ImageView(this)
+        val snake = ImageView(this)
+        val snakeSegments =
+            mutableListOf(snake)
+        val handler = Handler()
+        var delayMillis = 30L
+        var currentDirection = "right"
+        var scorex = 0
+
+        board.visibility = View.INVISIBLE
+        playagain.visibility = View.INVISIBLE
+        score.visibility = View.INVISIBLE
+        score2.visibility = View.INVISIBLE
+
+        newgame.setOnClickListener {
+
+
+            board.visibility = View.VISIBLE
+            newgame.visibility = View.INVISIBLE
+            resume.visibility = View.INVISIBLE
+            score2.visibility = View.VISIBLE
+
+            snake.setImageResource(R.drawable.snake)
+            snake.layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            board.addView(snake)
+            snakeSegments.add(snake) // Add the new snake segment to the list
+
+
+            var snakeX = snake.x
+            var snakeY = snake.y
+
+
+            meat.setImageResource(R.drawable.food)
+            meat.layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            board.addView(meat)
+
+            val random = Random() // create a Random object
+            val randomX =
+                random.nextInt(801) - 400
+            val randomY =
+                random.nextInt(801) - 400
+
+            meat.x = randomX.toFloat()
+            meat.y = randomY.toFloat()
+
+            fun checkFoodCollision() {
+                val distanceThreshold = 50
+
+                val distance = sqrt((snake.x - meat.x).pow(2) + (snake.y - meat.y).pow(2))
+
+                if (distance < distanceThreshold) {
+
+                    val newSnake =
+                        ImageView(this)
+                    newSnake.setImageResource(R.drawable.snake)
+                    newSnake.layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    )
+                    board.addView(newSnake)
+
+                    snakeSegments.add(newSnake)
+
+                    val randomX =
+                        random.nextInt(801) - -100
+                    val randomY =
+                        random.nextInt(801) - -100
+
+
+                    meat.x = randomX.toFloat()
+                    meat.y = randomY.toFloat()
+                    delayMillis--
+
+                    score2.text =   "score : " + scorex.toString()
+
+                }
+            }
+            val runnable = object : Runnable {
+                override fun run() {
+
+                    for (i in snakeSegments.size - 1 downTo 1) {
+                        snakeSegments[i].x = snakeSegments[i - 1].x
+                        snakeSegments[i].y = snakeSegments[i - 1].y
+                    }
+
+                    when (currentDirection) {
+                        "up" -> {
+                            snakeY -= 10
+                            if (snakeY < -490) {
+                                snakeY = -490f
+                                border.setBackgroundColor(getResources().getColor(R.color.red))
+                                playagain.visibility = View.VISIBLE
+                                currentDirection = "pause"
+                                lilu.visibility = View.INVISIBLE
+
+                                score.text =   "your score is  " + scorex.toString()
+                                score2.visibility = View.INVISIBLE
+
+                            }
+
+                            snake.translationY = snakeY
+                        }
+                        "down" -> {
+                            snakeY += 10
+                            val maxY =
+                                board.height / 2 - snake.height + 30
+                            if (snakeY > maxY) {
+                                snakeY = maxY.toFloat()
+                                border.setBackgroundColor(getResources().getColor(R.color.red))
+                                playagain.visibility = View.VISIBLE
+                                currentDirection = "pause"
+                                lilu.visibility = View.INVISIBLE
+
+                                score.text =   "your score is  " + scorex.toString()
+                                score.visibility = View.VISIBLE
+                                score2.visibility = View.INVISIBLE
+
+                            }
+                            snake.translationY = snakeY
+                        }
+                        "left" -> {
+                            snakeX -= 10
+                            if (snakeX < -490) {
+                                snakeX = -490f
+                                border.setBackgroundColor(getResources().getColor(R.color.red))
+                                playagain.visibility = View.VISIBLE
+                                currentDirection = "pause"
+                                lilu.visibility = View.INVISIBLE
+                                score.text =   "your score is  " + scorex.toString()
+                                score.visibility = View.VISIBLE
+                                score2.visibility = View.INVISIBLE
+
+                            }
+                            snake.translationX = snakeX
+                        }
+                        "right" -> {
+                            snakeX += 10
+                            val maxX =
+                                board.height / 2 - snake.height + 30
+                            if (snakeX > maxX) {
+                                snakeX = maxX.toFloat()
+                                border.setBackgroundColor(getResources().getColor(R.color.red))
+                                playagain.visibility = View.VISIBLE
+                                currentDirection = "pause"
+                                lilu.visibility = View.INVISIBLE
+
+                                score.text =   "your score is  " + scorex.toString()
+                                score.visibility = View.VISIBLE
+                                score2.visibility = View.INVISIBLE
+
+                            }
+                            snake.translationX = snakeX
+                        }
+
+                        "pause" -> {
+                            snakeX += 0
+                            snake.translationX = snakeX
+                        }
+                    }
+
+                    checkFoodCollision()
+                    handler.postDelayed(this, delayMillis)
+                }
+            }
+            handler.postDelayed(runnable, delayMillis)
+            upButton.setOnClickListener {
+                currentDirection = "up"
+            }
+            downButton.setOnClickListener {
+                currentDirection = "down"
+            }
+            leftButton.setOnClickListener {
+                currentDirection = "left"
+            }
+            rightButton.setOnClickListener {
+                currentDirection = "right"
+            }
+            pauseButton.setOnClickListener {
+                currentDirection = "pause"
+                board.visibility = View.INVISIBLE
+                newgame.visibility = View.VISIBLE
+                resume.visibility = View.VISIBLE
+
+            }
+            resume.setOnClickListener {
+                currentDirection = "right"
+                board.visibility = View.VISIBLE
+                newgame.visibility = View.INVISIBLE
+                resume.visibility = View.INVISIBLE
+
+            }
+            playagain.setOnClickListener {
+
+                recreate()
+            }
+        }
+    }
+}
+
+
+this is  MainActivity.kt
+
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <Button
+        android:id="@+id/score2"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:background="@color/green"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:textSize="15dp"
+        android:text="score"
+        app:layout_constraintBottom_toTopOf="@+id/lilu"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="SpUsage">
+
+    </Button>
+
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout"
+        android:layout_width="390dp"
+        android:layout_height="390dp"
+        android:gravity="center"
+        android:background="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="MissingConstraints">
+
+
+
+        <Button
+            android:id="@+id/score"
+            android:background="@color/black"
+            android:layout_width="wrap_content"
+            android:textAlignment="center"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="120dp"
+            android:layout_marginTop="140dp"
+            android:textSize="15dp"
+            android:text="Game Over ! Play Again">
+        </Button>
+
+
+
+        <Button
+            android:id="@+id/new_game"
+            android:background="@color/purple_700"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="130dp"
+            android:layout_marginTop="130dp"
+            android:text="New Game">
+
+        </Button>
+
+        <Button
+            android:id="@+id/resume"
+            android:background="@color/purple_700"
+            android:layout_width="150dp"
+            android:textAlignment="center"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/new_game"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="130dp"
+            android:layout_marginTop="10dp"
+            android:text="Resume Game">
+
+        </Button>
+
+        <Button
+            android:id="@+id/playagain"
+            android:background="@color/red"
+            android:layout_width="150dp"
+            android:textAlignment="center"
+            android:layout_height="80dp"
+            android:layout_below="@id/resume"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="120dp"
+            android:layout_marginTop="60dp"
+            android:textSize="20dp"
+            android:textStyle="bold"
+            android:text="Game Over ! Play Again">
+
+        </Button>
+
+        <RelativeLayout
+            android:id="@+id/board"
+            android:layout_width="380dp"
+            android:layout_height="380dp"
+            android:background="@color/black"
+            android:gravity="center"
+            android:layout_marginLeft="5dp"
+            tools:ignore="MissingConstraints">
+
+
+        </RelativeLayout>
+
+
+    </RelativeLayout>
+
+
+
+
+    <LinearLayout
+        android:id="@+id/lilu"
+        android:layout_width="330dp"
+        android:layout_height="330dp"
+        android:orientation="vertical"
+        android:layout_alignParentBottom="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="MissingConstraints">
+
+
+        <LinearLayout
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="100dp">
+
+            <Button
+                android:id="@+id/up"
+                android:layout_margin="10dp"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="UP">
+            </Button>
+
+        </LinearLayout>
+
+
+
+        <LinearLayout
+
+            android:layout_width="match_parent"
+            android:layout_height="100dp">
+
+            <Button
+                android:id="@+id/left"
+                android:layout_margin="10dp"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="LEFT">
+            </Button>
+
+            <Button
+                android:id="@+id/pause"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="pause">
+            </Button>
+
+            <Button
+                android:id="@+id/right"
+                android:layout_margin="10dp"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="RIGHT">
+            </Button>
+
+        </LinearLayout>
+
+
+
+        <LinearLayout
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="100dp">
+
+            <Button
+                android:id="@+id/down"
+                android:layout_margin="10dp"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="DOWN">
+            </Button>
+
+        </LinearLayout>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+this is the activity_main.xml
+
+this is the colors.xml
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="red">#FD0000</color>
+    <color name="green">#3AFF0E</color>
+    <color name="purple_700">#FF3700B3</color>
+</resources>
